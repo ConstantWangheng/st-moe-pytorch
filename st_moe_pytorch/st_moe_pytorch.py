@@ -526,7 +526,7 @@ class TopNGating(Module):
 
         # balance losses - (batch, experts)
         # We want to equalize the fraction of the batch assigned to each expert
-
+        # aux loss 代码实现
         if self.training:
             density_1 = reduce(mask_1, '... n e -> ... e', 'mean')
             density_1_proxy = reduce(raw_gates, '... n e -> ... e', 'mean') # Something continuous that is correlated with what we want to equalize.
@@ -538,12 +538,13 @@ class TopNGating(Module):
         # calculate the router z-loss proposed in paper
 
         if self.training:
+            # z_loss : 输入形状gate_logits --- batch * seq_n * nums_gate 
             router_z_loss = torch.logsumexp(gate_logits, dim = -1)
             router_z_loss = torch.square(router_z_loss)            
             router_z_loss = router_z_loss.mean()
         else:
             router_z_loss = self.zero
-
+        
         return dispatch_tensor, combine_tensor, balance_loss, router_z_loss
 
 # plain mixture of experts
